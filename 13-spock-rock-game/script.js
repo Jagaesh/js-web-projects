@@ -21,6 +21,24 @@ const computerSpock = document.getElementById('computerSpock');
 
 const allGameIcons = document.querySelectorAll('.far');
 
+// Choices as DOM Elements
+const elements = {
+  player: {
+    rock: document.getElementById("playerRock"),
+    paper: document.getElementById("playerPaper"),
+    scissors: document.getElementById("playerScissors"),
+    lizard: document.getElementById("playerLizard"),
+    spock: document.getElementById("playerSpock"),
+  },
+  computer: {
+    rock: document.getElementById("computerRock"),
+    paper: document.getElementById("computerPaper"),
+    scissors: document.getElementById("computerScissors"),
+    lizard: document.getElementById("computerLizard"),
+    spock: document.getElementById("computerSpock"),
+  },
+};
+
 // Game rules
 const choices = {
   rock: { name: 'Rock', defeats: ['scissors', 'lizard'] },
@@ -37,132 +55,66 @@ let computerChoice = '';
 
 // Reset selected icons
 function resetTurn() {
-  allGameIcons.forEach((icon) => {
-    icon.classList.remove('selected');
-  })
+  allGameIcons.forEach((icon) => icon.classList.remove("selected"));
   stopConfetti();
   removeConfetti();
 }
 
 // Reset score & choices
-function resetAll() {
-  playerScoreNumber = 0;
-  computerScoreNumber = 0;
+function resetGame() {
+  playerScoreNumber = computerScoreNumber = 0;
   playerScoreEl.textContent = playerScoreNumber;
   computerScoreEl.textContent = computerScoreNumber;
   playerChoiceEl.textContent = '';
   computerChoiceEl.textContent = '';
   resultText.textContent = '';
-  resetSelected();
+  resetTurn();
 }
-window.resetAll = resetAll;
+window.resetGame = resetGame;
 
 // Random computer choice
-function randomComputerChoice() {
-  const computerChoiceNumber = Math.floor(Math.random() * 5) + 1;
-  switch (computerChoiceNumber) {
-    case 1:
-      computerChoice = 'rock';
-      break;
-    case 2:
-      computerChoice = 'paper';
-      break;
-    case 3:
-      computerChoice = 'scissors';
-      break;
-    case 4:
-      computerChoice = 'lizard';
-      break;
-    case 5:
-      computerChoice = 'spock';
-      break;
-    default:
-      break;
-  }
+function generateComputerChoice() {
+  const keys = Object.keys(choices);
+  computerChoice = keys[Math.floor(Math.random() * keys.length)];
 }
 
-// Show computer choice
-function displayComputerChoice() {
-  switch (computerChoice) {
-    case 'rock':
-      computerRock.classList.add('selected');
-      computerChoiceEl.textContent = ' --- Rock';
-      break;
-    case 'paper':
-      computerPaper.classList.add('selected');
-      computerChoiceEl.textContent = ' --- Paper';
-      break;
-    case 'scissors':
-      computerScissors.classList.add('selected');
-      computerChoiceEl.textContent = ' --- Scissors';
-      break;
-    case 'lizard':
-      computerLizard.classList.add('selected');
-      computerChoiceEl.textContent = ' --- Lizard';
-      break;
-    case 'spock':
-      computerSpock.classList.add('selected');
-      computerChoiceEl.textContent = ' --- Spock';
-      break;
-    default:
-      break;
-  }
+// Show computer or player choice
+function showChoice(playerType, choice) {
+  const el = elements[playerType][choice];
+  if (!el) return;
+  el.classList.add("selected");
+  const target = playerType === "player" ? playerChoiceEl : computerChoiceEl;
+  target.textContent = ` --- ${choices[choice].name}`;
 }
 
 // Update results
 function updateScore(playerChoice) {
   if (playerChoice === computerChoice) {
     resultText.textContent = "It's a tie.";
+    return;
+  }
+  const won = choices[playerChoice].defeats.includes(computerChoice);
+  if (won) {
+    resultText.textContent = "You WON!!";
+    playerScoreEl.textContent = ++playerScoreNumber;
+    startConfetti();
   } else {
-    const choice = choices[playerChoice];
-    const won = choice.defeats.includes(computerChoice);
-    if (won) {
-      resultText.textContent = "You WON!!";
-      playerScoreNumber++;
-      playerScoreEl.textContent = playerScoreNumber;
-      startConfetti();
-    } else {
-      resultText.textContent = "You Lost..";
-      computerScoreNumber++;
-      computerScoreEl.textContent = computerScoreNumber;
-    }
+    resultText.textContent = "You Lost..";
+    computerScoreEl.textContent = ++computerScoreNumber;
   }
 }
 
 // Process turn
-function checkResult(playerChoice) {
+function processTurn(playerChoice) {
   resetTurn();
-  randomComputerChoice();
-  displayComputerChoice();
+  generateComputerChoice();
+  showChoice('computer', computerChoice);
+  showChoice('player', playerChoice)
   updateScore(playerChoice);
 }
 
 // Show player choice
 function select(playerChoice) {
-  checkResult(playerChoice);
-  switch (playerChoice) {
-    case 'rock':
-      playerRock.classList.add('selected');
-      playerChoiceEl.textContent = ' --- Rock';
-      break;
-    case 'paper':
-      playerPaper.classList.add('selected');
-      playerChoiceEl.textContent = ' --- Paper';
-      break;
-    case 'scissors':
-      playerScissors.classList.add('selected');
-      playerChoiceEl.textContent = ' --- Scissors';
-      break;
-    case 'lizard':
-      playerLizard.classList.add('selected');
-      playerChoiceEl.textContent = ' --- Lizard';
-      break;
-    case 'spock':
-      playerSpock.classList.add('selected');
-      playerChoiceEl.textContent = ' --- Spock';
-      break;
-    default:
-      break;
-  }
+  processTurn(playerChoice);
 }
 window.select = select;
