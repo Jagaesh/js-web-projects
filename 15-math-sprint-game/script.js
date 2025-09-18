@@ -105,7 +105,6 @@ function playAgain() {
 
 // Show Score Page
 function showScorePage() {
-  itemContainer.scrollTo({ top: 0, behavior: 'instant' });
   setTimeout(() => playAgainBtn.hidden = false, 1000);
   gamePage.hidden = true;
   scorePage.hidden = false;
@@ -184,6 +183,7 @@ function shuffle(array) {
 function showGamePage() {
   countdownPage.hidden = true;
   gamePage.hidden = false;
+  itemContainer.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 // Create Correct/Incorrect Random Equations
@@ -250,10 +250,19 @@ function populateGamePage(questionAmount) {
 
 // Displays 3, 2, 1, GO!
 function countdownStart() {
-  countdown.textContent = '3';
-  setTimeout(() => countdown.textContent = '2', 1000);
-  setTimeout(() => countdown.textContent = '1', 2000);
-  setTimeout(() => countdown.textContent = 'GO!', 3000);
+  let count = 3;
+  countdown.textContent = count;
+  const timeCountDown = setInterval(() => {
+    --count;
+    if (count === 0) {
+      countdown.textContent = 'Go!';
+    } else if (count === -1) {
+      showGamePage();
+      clearInterval(timeCountDown);
+    } else {
+      countdown.textContent = count;
+    }
+  }, 1000);
 }
 
 // Navigate from Splash Page to Countdown Page
@@ -288,9 +297,8 @@ function startGameFlow(e) {
   if (questionAmount) {
     GameState.questionAmount = questionAmount;
     showCountdownPage();
-    countdownStart();
     populateGamePage(questionAmount);
-    setTimeout(showGamePage, 4000);
+    countdownStart();
   }
 }
 
